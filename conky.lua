@@ -120,7 +120,7 @@ cpu_web_string = cpu_web_string .. "${cpugraph cpu0 " .. graphs.height .. "," ..
 
 -- [[ Memory graph string ]]
 mem_web_string = "Memory\n"
-mem_web_string = mem_web_string .. "${mem} / ${memfree} -- ${memperc}%\n"
+mem_web_string = mem_web_string .. "${mem} / ${memmax} -- ${memperc}%\n"
 mem_web_string = mem_web_string .. "${memgraph " .. graphs.height .. "," .. graphs.width * graphs.per_line .. "}"
 
 -- [[ Bundle all the needed variables at init ]]
