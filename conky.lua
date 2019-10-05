@@ -57,7 +57,7 @@ conky.config = {
     show_graph_range = false,
     show_graph_scale = false,
     stippled_borders = 0,
-    update_interval = 1.0,
+    update_interval = 0.25,
     uppercase = false,
     use_spacer = 'none',
     use_xft = true,
@@ -92,6 +92,7 @@ local cpu_web_string = ""
 for i = 0, cpu_count - 1, graphs.per_line do
     -- First part generates all the naming
     for j = 0, graphs.per_line - 1, 1 do
+        if j > cpu_count - 1 then break end
         local core_desc = "Core " ..  i + j + 1
         cpu_web_string = cpu_web_string .. core_desc
         if j ~= (graphs.per_line - 1) then
@@ -102,6 +103,7 @@ for i = 0, cpu_count - 1, graphs.per_line do
 
     -- Second part generates all the frequencies
     for j = 0, graphs.per_line - 1, 1 do
+        if j > cpu_count - 1 then break end
         cpu_web_string = cpu_web_string .. "${freq" .. " " ..  i + j + 1 .. "} MHz"
         if j ~= (graphs.per_line - 1) then
             cpu_web_string = cpu_web_string .. string.rep(" ", 17)
@@ -109,8 +111,9 @@ for i = 0, cpu_count - 1, graphs.per_line do
     end
     cpu_web_string = cpu_web_string .. "\n"
 
-    -- Third part generaes all the actual graphs
+    -- Third part generates all the actual graphs
     for j = 0, graphs.per_line - 1, 1 do
+        if j > cpu_count - 1 then break end
         cpu_web_string = cpu_web_string .. "${cpugraph" .. " " .. "cpu" .. i + j + 1 .. " " .. graphs.height .. "," .. graphs.width .. "}"
     end
     cpu_web_string = cpu_web_string .. "\n"
@@ -125,7 +128,7 @@ mem_web_string = mem_web_string .. "${memgraph " .. graphs.height .. "," .. grap
 
 -- [[ Bundle all the needed variables at init ]]
 local init_table = {
-    os_name = run_command("lsb_release -sd"):sub(2, -2),
+    os_name = run_command("lsb_release -sd"):gsub('"', ""),
     bash_version = "Bash" .. " " .. run_command("bash -c 'echo $BASH_VERSION'"),
     bar = bar.char:rep(bar.length),
     cpu_name = run_command("cat /proc/cpuinfo | grep 'model name' | uniq | cut -f 2 -d ':' | awk '{$1=$1}1'"),
