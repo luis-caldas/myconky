@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 conky.config = {
     alignment = 'top_right',
     background = false,
-    border_width = 10,
+    border_width = 20,
     cpu_avg_samples = 2,
     default_color = 'white',
     default_outline_color = 'white',
@@ -38,9 +38,9 @@ conky.config = {
     draw_outline = false,
     draw_shades = false,
     extra_newline = false,
-    font = 'RobotoMono:size=8',
-    gap_x = 60,
-    gap_y = 89,
+    font = 'RobotoMono:size=9',
+    gap_x = 140,
+    gap_y = 140,
     minimum_height = 5,
     minimum_width = 5,
     net_avg_samples = 2,
@@ -57,7 +57,7 @@ conky.config = {
     show_graph_range = false,
     show_graph_scale = false,
     stippled_borders = 0,
-    update_interval = 0.25,
+    update_interval = 1,
     uppercase = false,
     use_spacer = 'none',
     use_xft = true,
@@ -70,8 +70,8 @@ local bar = {
 }
 local graphs = {
     per_line = 4,
-    height = 40,
-    width = 150
+    height = 50,
+    width = 175
 }
 
 -- [[ String interpolation function ]]
