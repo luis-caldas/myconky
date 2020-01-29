@@ -62,6 +62,7 @@ conky.config = {
     uppercase = false,
     use_spacer = 'none',
     use_xft = true,
+	lua_load = '~/.conkyrc.functions.lua'
 }
 
 -- [[ Dev variables ]]
@@ -82,10 +83,26 @@ local function string_interpolation (string_input, variable_table)
     end)
 end
 
+-- [[ String string function ]]
+function string:split(sep)
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    self:gsub(pattern, function(c) table.insert(fields, c) end)
+	return fields
+end
+
 -- [[ Command execution function ]]
 local function run_command (command_string)
-    return io.popen(command_string):read()
+    return io.popen(command_string):read('*a'):sub(1, -2)
 end
+
+-- [[ Pregenerate the needed variables ]] --
+local pregenerated = {
+    release = run_command("lsb_release -sd"):gsub("\"", ""),
+    release_version = run_command("lsb_release -s"):gsub("\"", ""),
+    bash_version = run_command("bash -c 'echo $BASH_VERSION'"),
+    cpu_name = run_command("grep 'model name' /proc/cpuinfo | uniq | cut -f 2 -d ':' | awk '{$1=$1}1'")
+}
 
 -- [[ Generate the graph web of CPUs ]]
 local cpu_count = run_command("grep -c ^processor /proc/cpuinfo")
@@ -105,10 +122,9 @@ for i = 0, cpu_count - 1, graphs.per_line do
     -- Second part generates all the frequencies
     for j = 0, graphs.per_line - 1, 1 do
         if j > cpu_count - 1 then break end
-        cpu_web_string = cpu_web_string .. "${freq" .. " " ..  i + j + 1 .. "} MHz"
-        if j ~= (graphs.per_line - 1) then
-            cpu_web_string = cpu_web_string .. string.rep(" ", 17)
-        end
+        -- Use custom frequency command
+        local freq_desc =  "${lua justify_core " .. i + j + 1 .. " 25}"
+        cpu_web_string = cpu_web_string .. freq_desc
     end
     cpu_web_string = cpu_web_string .. "\n"
 
@@ -119,9 +135,11 @@ for i = 0, cpu_count - 1, graphs.per_line do
     end
     cpu_web_string = cpu_web_string .. "\n"
 end
-cpu_web_string = cpu_web_string .. "All Cores\n" .. "${freq cpu0} MHz\n"
+cpu_web_string = cpu_web_string .. "All Cores\n" .. "${lua conky_justify_core 0 25}" .. "\n"
 cpu_web_string = cpu_web_string .. "${cpugraph cpu0 " .. graphs.height .. "," .. graphs.width * graphs.per_line .. "}"
-
+function conky_ass()
+	return "biggass"
+end
 -- [[ Memory graph string ]]
 mem_web_string = "Memory\n"
 mem_web_string = mem_web_string .. "${mem} / ${memmax} -- ${memperc}%\n"
@@ -129,10 +147,11 @@ mem_web_string = mem_web_string .. "${memgraph " .. graphs.height .. "," .. grap
 
 -- [[ Bundle all the needed variables at init ]]
 local init_table = {
-    os_name = run_command("lsb_release -sd"):gsub('"', ""),
-    bash_version = "Bash" .. " " .. run_command("bash -c 'echo $BASH_VERSION'"),
+    os_name = pregenerated.release,
+    os_version = pregenerated.release_version,
+    bash_version = "Bash" .. " " .. pregenerated.bash_version,
     bar = bar.char:rep(bar.length),
-    cpu_name = run_command("cat /proc/cpuinfo | grep 'model name' | uniq | cut -f 2 -d ':' | awk '{$1=$1}1'"),
+    cpu_name = pregenerated.cpu_name,
     cpu_graphs = cpu_web_string,
     mem_graph = mem_web_string
 }
@@ -140,7 +159,7 @@ local init_table = {
 -- [[ Conky text string with local variable support ]]
 local raw_string = [[
 Kernel: ${kernel}
-OS: #{os_name} ${exec lsb_release -s}
+OS: #{os_name} #{os_version}
 Uptime: ${uptime}
 Shell: #{bash_version}
 

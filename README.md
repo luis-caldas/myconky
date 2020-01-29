@@ -4,4 +4,5 @@ My default conky configuration
 
 #### Usage
 
-Simply link the `conky.lua` file to `~/.conkyrc` path.
+Link the `conky.lua` file to `~/.conkyrc`.
+Link the `functions.lua` file to `~/.conkyrc.functions.lua`  
