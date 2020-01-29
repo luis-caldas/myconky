@@ -2,6 +2,8 @@
 local SEPARATOR = " "
 local MAX_NUMBERS_FREQ = 4
 
+local BATTERY_FOLDER = "/sys/class/power_supply/rk-bat"
+
 -- [[ String string function ]]
 function string:split(sep)
     local sep, fields = sep or ":", {}

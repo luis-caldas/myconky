@@ -75,6 +75,12 @@ local graphs = {
     height = 50,
     width = 175
 }
+local battery_folder = "/sys/class/power_supply/rk-bat"
+
+-- [[ Check if the system has battery ]]
+local function has_battery()
+    return run_command("test -d " .. battery_folder .. " && echo true || echo false") == "true"
+end
 
 -- [[ String interpolation function ]]
 local function string_interpolation (string_input, variable_table)
@@ -143,6 +149,14 @@ mem_web_string = "Memory\n"
 mem_web_string = mem_web_string .. "${mem} / ${memmax} -- ${memperc}%\n"
 mem_web_string = mem_web_string .. "${memgraph " .. graphs.height .. "," .. graphs.width * graphs.per_line .. "}"
 
+-- [[ Battery graph string ]]
+bat_web_string = ""
+if has_battery then
+    bat_web_string = bat_web_string .. "Status ${exec cat" .. battery_folder .. "/status" .. "}\n"
+    bat_web_string = bat_web_string .. "Health ${exec cat" .. battery_folder .. "/health" .. "}\n"
+    bat_web_string = bat_web_string .. "Capacity ${exec cat" .. battery_folder .. "/capacity" .. "}\n"
+end
+
 -- [[ Bundle all the needed variables at init ]]
 local init_table = {
     os_name = pregenerated.release,
@@ -151,7 +165,8 @@ local init_table = {
     bar = bar.char:rep(bar.length),
     cpu_name = pregenerated.cpu_name,
     cpu_graphs = cpu_web_string,
-    mem_graph = mem_web_string
+    mem_graph = mem_web_string,
+    bat_graph = bat_web_string
 }
 
 -- [[ Conky text string with local variable support ]]
