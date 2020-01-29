@@ -24,11 +24,26 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
+-- [[ Dev variables ]]
+local bar = {
+    length = 100,
+    char = "-"
+}
+local graphs = {
+    per_line = 4,
+    height = 50,
+    width = 175
+}
+local devices = {
+    battery = "/sys/class/power_supply/rk-bat"
+}
+
 conky.config = {
     alignment = 'top_right',
     background = false,
     border_width = 20,
     cpu_avg_samples = 2,
+    default_bar_height = graphs.height,
     default_color = 'white',
     default_outline_color = 'white',
     default_shade_color = 'white',
@@ -39,8 +54,8 @@ conky.config = {
     draw_shades = false,
     extra_newline = false,
     font = 'RobotoMono:size=9',
-    gap_x = 140,
-    gap_y = 140,
+    gap_x = 100,
+    gap_y = 126,
     minimum_height = 5,
     minimum_width = 5,
     net_avg_samples = 2,
@@ -65,21 +80,14 @@ conky.config = {
 	lua_load = '~/.conkyrc.functions.lua'
 }
 
--- [[ Dev variables ]]
-local bar = {
-    length = 100,
-    char = "-"
-}
-local graphs = {
-    per_line = 4,
-    height = 50,
-    width = 175
-}
-local battery_folder = "/sys/class/power_supply/rk-bat"
+-- [[ Command execution function ]]
+local function run_command (command_string)
+    return io.popen(command_string):read('*a'):sub(1, -2)
+end
 
 -- [[ Check if the system has battery ]]
 local function has_battery()
-    return run_command("test -d " .. battery_folder .. " && echo true || echo false") == "true"
+    return run_command("test -d " .. devices.battery .. " && echo true || echo false") == "true"
 end
 
 -- [[ String interpolation function ]]
@@ -97,11 +105,6 @@ function string:split(sep)
 	return fields
 end
 
--- [[ Command execution function ]]
-local function run_command (command_string)
-    return io.popen(command_string):read('*a'):sub(1, -2)
-end
-
 -- [[ Pregenerate the needed variables ]] --
 local pregenerated = {
     release = run_command("lsb_release -sd"):gsub("\"", ""),
@@ -116,7 +119,7 @@ local cpu_web_string = ""
 for i = 0, cpu_count - 1, graphs.per_line do
     -- First part generates all the naming
     for j = 0, graphs.per_line - 1, 1 do
-        if j + i> cpu_count - 1 then break end
+        if j + i > cpu_count - 1 then break end
         local core_desc = "Core " ..  i + j + 1
         cpu_web_string = cpu_web_string .. core_desc
         if j ~= (graphs.per_line - 1) then
@@ -125,23 +128,33 @@ for i = 0, cpu_count - 1, graphs.per_line do
     end
     cpu_web_string = cpu_web_string .. "\n"
 
-    -- Second part generates all the frequencies
+    -- Second part lists all the governors
     for j = 0, graphs.per_line - 1, 1 do
-        if j + i> cpu_count - 1 then break end
+        if j + i > cpu_count - 1 then break end
+        local gover_desc = "${lua justify_gover " .. i + j + 1 .. " 25}"
+        cpu_web_string = cpu_web_string .. gover_desc
+    end
+    cpu_web_string = cpu_web_string .. "\n"
+
+    -- Third part generates all the frequencies
+    for j = 0, graphs.per_line - 1, 1 do
+        if j + i > cpu_count - 1 then break end
         -- Use custom frequency command
-        local freq_desc =  "${lua justify_core " .. i + j + 1 .. " 25}"
+        local freq_desc = "${lua justify_core " .. i + j + 1 .. " 25}"
         cpu_web_string = cpu_web_string .. freq_desc
     end
     cpu_web_string = cpu_web_string .. "\n"
 
-    -- Third part generates all the actual graphs
+    -- Fourth part generates all the actual graphs
     for j = 0, graphs.per_line - 1, 1 do
-        if j + i> cpu_count - 1 then break end
+        if j + i > cpu_count - 1 then break end
         cpu_web_string = cpu_web_string .. "${cpugraph" .. " " .. "cpu" .. i + j + 1 .. " " .. graphs.height .. "," .. graphs.width .. "}"
     end
     cpu_web_string = cpu_web_string .. "\n"
 end
-cpu_web_string = cpu_web_string .. "All Cores\n" .. "${lua conky_justify_core 0 25}" .. "\n"
+
+-- Final part generates the all cores graph
+cpu_web_string = cpu_web_string .. "All Cores\n" .. "${lua gover_all}\n" .. "${lua conky_justify_core 0 25}" .. "\n"
 cpu_web_string = cpu_web_string .. "${cpugraph cpu0 " .. graphs.height .. "," .. graphs.width * graphs.per_line .. "}"
 
 -- [[ Memory graph string ]]
@@ -151,10 +164,15 @@ mem_web_string = mem_web_string .. "${memgraph " .. graphs.height .. "," .. grap
 
 -- [[ Battery graph string ]]
 bat_web_string = ""
-if has_battery then
-    bat_web_string = bat_web_string .. "Status ${exec cat" .. battery_folder .. "/status" .. "}\n"
-    bat_web_string = bat_web_string .. "Health ${exec cat" .. battery_folder .. "/health" .. "}\n"
-    bat_web_string = bat_web_string .. "Capacity ${exec cat" .. battery_folder .. "/capacity" .. "}\n"
+if has_battery() then
+    bat_web_string = bat_web_string .. "\n\n" .. bar.char:rep(bar.length) .. "\n"
+    bat_web_string = bat_web_string .. "\nBattery\n"
+    bat_web_string = bat_web_string .. "${exec cat " .. devices.battery .. "/status" .. "}"
+    bat_web_string = bat_web_string .. " / "
+    bat_web_string = bat_web_string .. "${exec cat " .. devices.battery .. "/health" .. "}"
+    bat_web_string = bat_web_string .. " -- "
+    bat_web_string = bat_web_string .. "${exec cat " .. devices.battery .. "/capacity" .. "} %\n"
+    bat_web_string = bat_web_string .. "${execbar cat " .. devices.battery .. "/capacity" .. "}"
 end
 
 -- [[ Bundle all the needed variables at init ]]
@@ -184,8 +202,7 @@ Shell: #{bash_version}
 
 #{bar}
 
-#{mem_graph}
-
+#{mem_graph}#{bat_graph}
 ]]
 
 -- [[ Generate interpolated string ]]

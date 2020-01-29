@@ -3,6 +3,7 @@ local SEPARATOR = " "
 local MAX_NUMBERS_FREQ = 4
 
 local BATTERY_FOLDER = "/sys/class/power_supply/rk-bat"
+local CPU_FOLDER = "/sys/devices/system/cpu"
 
 -- [[ String string function ]]
 function string:split(sep)
@@ -78,4 +79,27 @@ end
 -- Join functions for ease of use
 function conky_justify_core(core_number_input, total_size_input)
 	return conky_justify(conky_get_core(core_number_input) .. " MHz", total_size_input)
+end
+
+-- List the processor governor
+function conky_justify_gover(core_number_input, total_size_input)
+    return conky_justify(run_command("cat " .. CPU_FOLDER .. "/cpu" .. tonumber(core_number_input) - 1 .. "/cpufreq/scaling_governor"), total_size_input)
+end
+
+-- List the governor of all processors
+function conky_gover_all()
+    -- Check if all the governors are the same
+    local governor_count = run_command("cat " .. CPU_FOLDER .. "/cpu*/cpufreq/scaling_governor | uniq | wc -l")
+
+    -- Output string
+    local return_string = ""
+
+    -- If they are the same print the first
+    if governor_count == "1" then
+        return_string = run_command("cat " .. CPU_FOLDER .. "/cpu0/cpufreq/scaling_governor")
+    else
+        return_string = "mixed"
+    end
+
+    return return_string
 end
