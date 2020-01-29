@@ -21,7 +21,7 @@ function conky_get_core(core_number_input)
 	local core_number = tonumber(core_number_input)
 
 	-- Initialize var
-	local freq_now = ""
+	local freq_now = nil
 
 	-- Acquire the cpu freqs
 	if core_number == 0 then
@@ -30,11 +30,25 @@ function conky_get_core(core_number_input)
 		freq_now = run_command("grep 'cpu MHz' /proc/cpuinfo | awk '{print $4}'"):split("\n")[core_number]
 	end
 
-	-- Add a leading padding if the frequency has not 4 numbers
-	local first_number_len = freq_now:split(".")[1]:len()
-	if first_number_len < MAX_NUMBERS_FREQ then
-		freq_now = string.rep(SEPARATOR, MAX_NUMBERS_FREQ - first_number_len) .. freq_now
+    -- Check if the method before was successful and if not get frequency through other methods
+    if freq_now == nil or freq_now == "" then
+        if core_number > 0 then
+            freq_now = string.format(
+                "%.3f",
+                tonumber(run_command("cat /sys/devices/system/cpu/cpu" .. core_number - 1 .. "/cpufreq/scaling_cur_freq")) / 1000
+            )
+        end
 	end
+
+	-- Add a leading padding if the frequency has not 4 numbers
+    if freq_now ~= nil and freq_now ~= "" then
+        local first_number_len = freq_now:split(".")[1]:len()
+        if first_number_len < MAX_NUMBERS_FREQ then
+            freq_now = string.rep(SEPARATOR, MAX_NUMBERS_FREQ - first_number_len) .. freq_now
+        end
+    else
+        freq_now = "Undefined"
+    end
 
 	-- Return the frequency
 	return freq_now

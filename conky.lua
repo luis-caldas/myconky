@@ -110,7 +110,7 @@ local cpu_web_string = ""
 for i = 0, cpu_count - 1, graphs.per_line do
     -- First part generates all the naming
     for j = 0, graphs.per_line - 1, 1 do
-        if j > cpu_count - 1 then break end
+        if j + i> cpu_count - 1 then break end
         local core_desc = "Core " ..  i + j + 1
         cpu_web_string = cpu_web_string .. core_desc
         if j ~= (graphs.per_line - 1) then
@@ -121,7 +121,7 @@ for i = 0, cpu_count - 1, graphs.per_line do
 
     -- Second part generates all the frequencies
     for j = 0, graphs.per_line - 1, 1 do
-        if j > cpu_count - 1 then break end
+        if j + i> cpu_count - 1 then break end
         -- Use custom frequency command
         local freq_desc =  "${lua justify_core " .. i + j + 1 .. " 25}"
         cpu_web_string = cpu_web_string .. freq_desc
@@ -130,16 +130,14 @@ for i = 0, cpu_count - 1, graphs.per_line do
 
     -- Third part generates all the actual graphs
     for j = 0, graphs.per_line - 1, 1 do
-        if j > cpu_count - 1 then break end
+        if j + i> cpu_count - 1 then break end
         cpu_web_string = cpu_web_string .. "${cpugraph" .. " " .. "cpu" .. i + j + 1 .. " " .. graphs.height .. "," .. graphs.width .. "}"
     end
     cpu_web_string = cpu_web_string .. "\n"
 end
 cpu_web_string = cpu_web_string .. "All Cores\n" .. "${lua conky_justify_core 0 25}" .. "\n"
 cpu_web_string = cpu_web_string .. "${cpugraph cpu0 " .. graphs.height .. "," .. graphs.width * graphs.per_line .. "}"
-function conky_ass()
-	return "biggass"
-end
+
 -- [[ Memory graph string ]]
 mem_web_string = "Memory\n"
 mem_web_string = mem_web_string .. "${mem} / ${memmax} -- ${memperc}%\n"
