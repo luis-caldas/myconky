@@ -93,7 +93,7 @@ local function has_battery()
     -- Iterate the paths and check for a valid battery
 	for index, bat_var in pairs(battery_path.variants) do
         if run_command("test -d " .. battery_path.base .. "/" .. bat_var .. " && echo true || echo false") == "true" then
-            battery_path.has_battery = run_command("test -f " .. battery_path.base .. "/" .. bat_var .. "/" .. "health" .. " && echo true || echo false") == true
+            battery_path.has_health = run_command("test -f " .. battery_path.base .. "/" .. bat_var .. "/" .. "health" .. " && echo true || echo false") == "true"
             return index
         end
 	end
