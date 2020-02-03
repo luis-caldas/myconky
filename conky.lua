@@ -36,7 +36,8 @@ local graphs = {
 }
 local battery_path = {
     base = "/sys/class/power_supply",
-    variants = {"rk-bat", "BAT0", "BAT1", "BAT2"}
+    variants = {"rk-bat", "BAT0", "BAT1", "BAT2"},
+    has_health = nil
 }
 
 conky.config = {
@@ -90,8 +91,9 @@ end
 local function has_battery()
 
     -- Iterate the paths and check for a valid battery
-	for index, bat_var in battery_path.variants do
+	for index, bat_var in pairs(battery_path.variants) do
         if run_command("test -d " .. battery_path.base .. "/" .. bat_var .. " && echo true || echo false") == "true" then
+            battery_path.has_battery = run_command("test -f " .. battery_path.base .. "/" .. bat_var .. "/" .. "health" .. " && echo true || echo false") == true
             return index
         end
 	end
@@ -180,8 +182,10 @@ if battery_nr > 0 then
     bat_web_string = bat_web_string .. "\n\n" .. bar.char:rep(bar.length) .. "\n"
     bat_web_string = bat_web_string .. "\nBattery\n"
     bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/status" .. "}"
-    bat_web_string = bat_web_string .. " / "
-    bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/health" .. "}"
+    if battery_path.has_health then
+        bat_web_string = bat_web_string .. " / "
+        bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/health" .. "}"
+    end
     bat_web_string = bat_web_string .. " -- "
     bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/capacity" .. "} %\n"
     bat_web_string = bat_web_string .. "${execbar cat " .. battery_full_path .. "/capacity" .. "}"
