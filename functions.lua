@@ -2,7 +2,6 @@
 local SEPARATOR = " "
 local MAX_NUMBERS_FREQ = 4
 
-local BATTERY_FOLDER = "/sys/class/power_supply/rk-bat"
 local CPU_FOLDER = "/sys/devices/system/cpu"
 
 -- [[ String string function ]]

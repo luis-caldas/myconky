@@ -34,8 +34,9 @@ local graphs = {
     height = 50,
     width = 175
 }
-local devices = {
-    battery = "/sys/class/power_supply/rk-bat"
+local battery_path = {
+    base = "/sys/class/power_supply",
+    variants = {"rk-bat", "BAT0", "BAT1", "BAT2"}
 }
 
 conky.config = {
@@ -87,7 +88,16 @@ end
 
 -- [[ Check if the system has battery ]]
 local function has_battery()
-    return run_command("test -d " .. devices.battery .. " && echo true || echo false") == "true"
+
+    -- Iterate the paths and check for a valid battery
+	for index, bat_var in battery_path.variants do
+        if run_command("test -d " .. battery_path.base .. "/" .. bat_var .. " && echo true || echo false") == "true" then
+            return index
+        end
+	end
+
+    -- If no battery was found return null
+    return 0
 end
 
 -- [[ String interpolation function ]]
@@ -164,15 +174,17 @@ mem_web_string = mem_web_string .. "${memgraph " .. graphs.height .. "," .. grap
 
 -- [[ Battery graph string ]]
 bat_web_string = ""
-if has_battery() then
+local battery_nr = has_battery()
+if battery_nr > 0 then
+    battery_full_path = battery_path.base .. "/" .. battery_path.variants[battery_nr]
     bat_web_string = bat_web_string .. "\n\n" .. bar.char:rep(bar.length) .. "\n"
     bat_web_string = bat_web_string .. "\nBattery\n"
-    bat_web_string = bat_web_string .. "${exec cat " .. devices.battery .. "/status" .. "}"
+    bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/status" .. "}"
     bat_web_string = bat_web_string .. " / "
-    bat_web_string = bat_web_string .. "${exec cat " .. devices.battery .. "/health" .. "}"
+    bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/health" .. "}"
     bat_web_string = bat_web_string .. " -- "
-    bat_web_string = bat_web_string .. "${exec cat " .. devices.battery .. "/capacity" .. "} %\n"
-    bat_web_string = bat_web_string .. "${execbar cat " .. devices.battery .. "/capacity" .. "}"
+    bat_web_string = bat_web_string .. "${exec cat " .. battery_full_path .. "/capacity" .. "} %\n"
+    bat_web_string = bat_web_string .. "${execbar cat " .. battery_full_path .. "/capacity" .. "}"
 end
 
 -- [[ Bundle all the needed variables at init ]]
