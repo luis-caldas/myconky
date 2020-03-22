@@ -42,6 +42,8 @@ local battery_path = {
 
 conky.config = {
     alignment = 'top_right',
+    -- xinerama_head = 1, -- not needed anymore
+                          -- the monitor can be chosen with the flag '-m'
     background = false,
     border_width = 20,
     cpu_avg_samples = 2,
