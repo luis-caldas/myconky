@@ -58,7 +58,7 @@ conky.config = {
     extra_newline = false,
     font = 'Mono:size=12',
     gap_x = 30,
-    gap_y = 60,
+    gap_y = 30,
     minimum_height = 5,
     minimum_width = 5,
     net_avg_samples = 2,
