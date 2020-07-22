@@ -80,7 +80,7 @@ conky.config = {
     uppercase = false,
     use_spacer = 'none',
     use_xft = true,
-	lua_load = '~/.config/conky/conkyrc.functions.lua'
+    lua_load = '~/.config/conky/functions.lua'
 }
 
 -- [[ Command execution function ]]
