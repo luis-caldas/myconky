@@ -30,9 +30,10 @@ conky.config = {
     draw_outline = false,
     draw_shades = false,
     extra_newline = false,
+    default_color = 'ffffff',
     font = 'Mono:size=12',
-    gap_x = 30,
-    gap_y = 30,
+    gap_x = 50,
+    gap_y = 75,
     minimum_height = 5,
     minimum_width = 5,
     net_avg_samples = 2,
@@ -41,12 +42,12 @@ conky.config = {
     out_to_ncurses = false,
     out_to_stderr = false,
     out_to_x = true,
-    own_window = no,
+    own_window = true,
+    own_window_transparent = false,
+    own_window_type = 'override',
     own_window_colour = '0D0D0D',
-    own_window_transparent = true,
-    own_window_argb_visual = false,
-    own_window_type = 'normal',
-    own_window_argb_value = 255,
+    own_window_argb_visual = true,
+    own_window_argb_value = 210,
     show_graph_range = false,
     show_graph_scale = false,
     stippled_borders = 0,
@@ -180,20 +181,12 @@ local init_table = {
 
 -- [[ Conky text string with local variable support ]]
 local raw_string = [[
-Kernel: ${kernel}
-OS: #{os_name} #{os_version}
 Uptime: ${uptime}
-Shell: #{bash_version}
-
-#{bar}
 
 #{cpu_name}
 
 #{cpu_graphs}
-
-#{bar}
-
-#{mem_graph}#{bat_graph}
+#{mem_graph}
 ]]
 
 -- [[ Generate interpolated string ]]
