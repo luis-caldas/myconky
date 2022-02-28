@@ -7,28 +7,6 @@ end
 local scaler = get_scaler()
 
 -- }}}
--- {{{ Variable
-
--- [[ Dev variables ]]
-
-local bar = {
-	length = 100,
-	char = "-"
-}
-
-local graphs = {
-	per_line = 4,
-	height = 50 * scaler,
-	width = 200 * scaler
-}
-
-local battery_path = {
-	base = "/sys/class/power_supply",
-	variants = {"rk-bat", "BAT0", "BAT1", "BAT2"},
-	has_health = nil
-}
-
--- }}}
 -- {{{ Functions
 
 -- [[ Command execution function ]]
@@ -37,6 +15,13 @@ local function run_command (command_string)
 end
 
 -- [[ Check if the system has battery ]]
+
+local battery_path = {
+	base = "/sys/class/power_supply",
+	variants = {"rk-bat", "BAT0", "BAT1", "BAT2"},
+	has_health = nil
+}
+
 local function has_battery()
 
 	-- Iterate the paths and check for a valid battery
@@ -69,11 +54,26 @@ end
 -- }}}
 -- {{{ XResource
 
+local xrdb_prefix = "conky"
 local function get_xrdb_item(item_name)
-	return run_command("xrdb -q | grep " .. item_name .. " | head -n1 | awk '{print $2}'")
+	return run_command("xrdb -q | grep " .. xrdb_prefix .. "." .. item_name .. " | head -n1 | awk '{print $2}'")
 end
 
-local xrdb_prefix = "conky."
+-- }}}
+-- {{{ Variable
+
+-- [[ Dev variables ]]
+
+local bar = {
+	length = tonumber(get_xrdb_item("bar")),
+	char = "-"
+}
+
+local graphs = {
+	per_line = 4,
+	height = tonumber(get_xrdb_item("graph-height")) * scaler,
+	width = tonumber(get_xrdb_item("graph-width")) * scaler
+}
 
 -- }}}
 -- {{{ Config
@@ -90,7 +90,7 @@ conky.config = {
 	own_window_title = 'Main_Conky_Window',
 	alignment = 'top_right',
 	background = false,
-	border_width = 20 * scaler,
+	border_width = tonumber(get_xrdb_item("border")) * scaler,
 	cpu_avg_samples = 2,
 	default_bar_height = graphs.height,
 	default_color = 'black',
@@ -101,10 +101,10 @@ conky.config = {
 	draw_outline = false,
 	draw_shades = false,
 	extra_newline = false,
-	default_color = get_xrdb_item(xrdb_prefix .. "foreground"),
+	default_color = get_xrdb_item("foreground"),
 	font = 'Mono:size=12',
-	gap_x = 52 * scaler,
-	gap_y = 75 * scaler,
+	gap_x = tonumber(get_xrdb_item("gapx")) * scaler,
+	gap_y = tonumber(get_xrdb_item("gapy")) * scaler,
 	minimum_height = 5 * scaler,
 	minimum_width = 5 * scaler,
 	net_avg_samples = 2,
@@ -116,7 +116,7 @@ conky.config = {
 	own_window = true,
 	own_window_transparent = false,
 	own_window_type = 'override',
-	own_window_colour = get_xrdb_item(xrdb_prefix .. "background"),
+	own_window_colour = get_xrdb_item("background"),
 	own_window_argb_visual = true,
 	own_window_argb_value = 210,
 	show_graph_range = false,
