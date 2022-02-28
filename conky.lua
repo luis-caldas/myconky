@@ -67,11 +67,20 @@ function string:split(sep)
 end
 
 -- }}}
+-- {{{ XResource
+
+local function get_xrdb_item(item_name)
+	return run_command("xrdb -q | grep " .. item_name .. " | head -n1 | awk '{print $2}'")
+end
+
+local xrdb_prefix = "conky."
+
+-- }}}
 -- {{{ Config
 
 local function script_path()
 	local str = debug.getinfo(2, "S").source:sub(2)
-	return str:match("(.*/)")
+	return str:match("(.*/)") or ""
 end
 
 local my_functions = script_path() .. 'functions.lua'
@@ -92,7 +101,7 @@ conky.config = {
 	draw_outline = false,
 	draw_shades = false,
 	extra_newline = false,
-	default_color = 'ffffff',
+	default_color = get_xrdb_item(xrdb_prefix .. "foreground"),
 	font = 'Mono:size=12',
 	gap_x = 52 * scaler,
 	gap_y = 75 * scaler,
@@ -107,7 +116,7 @@ conky.config = {
 	own_window = true,
 	own_window_transparent = false,
 	own_window_type = 'override',
-	own_window_colour = '0D0D0D',
+	own_window_colour = get_xrdb_item(xrdb_prefix .. "background"),
 	own_window_argb_visual = true,
 	own_window_argb_value = 210,
 	show_graph_range = false,
