@@ -77,6 +77,8 @@ end
 local my_functions = script_path() .. 'functions.lua'
 
 conky.config = {
+	own_window_class = 'Conky';
+	own_window_title = 'Main_Conky_Window',
 	alignment = 'top_right',
 	background = false,
 	border_width = 20 * scaler,
