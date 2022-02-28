@@ -94,7 +94,7 @@ conky.config = {
 	extra_newline = false,
 	default_color = 'ffffff',
 	font = 'Mono:size=12',
-	gap_x = 50 * scaler,
+	gap_x = 52 * scaler,
 	gap_y = 75 * scaler,
 	minimum_height = 5 * scaler,
 	minimum_width = 5 * scaler,
