@@ -213,7 +213,7 @@ local init_table = {
 	os_version = pregenerated.release_version,
 	bash_version = "Bash" .. " " .. pregenerated.bash_version,
 	bar = bar.char:rep(bar.length),
-	cpu_name = pregenerated.cpu_name,
+	cpu_name = pregenerated.cpu_ls,
 	cpu_graphs = cpu_web_string,
 	mem_graph = mem_web_string,
 	bat_graph = bat_web_string
@@ -223,7 +223,7 @@ local init_table = {
 local raw_string = [[
 Uptime: ${uptime}
 
-#{cpu_ls}
+#{cpu_name}
 
 #{cpu_graphs}
 #{mem_graph}
