@@ -137,7 +137,8 @@ local pregenerated = {
 	release = run_command("lsb_release -sd"):gsub("\"", ""),
 	release_version = run_command("lsb_release -s"):gsub("\"", ""),
 	bash_version = run_command("bash -c 'echo $BASH_VERSION'"),
-	cpu_name = run_command("grep 'model name' /proc/cpuinfo | uniq | cut -f 2 -d ':' | awk '{$1=$1}1'")
+	cpu_name = run_command("grep 'model name' /proc/cpuinfo | uniq | cut -f 2 -d ':' | awk '{$1=$1}1'"),
+	cpu_ls = run_command("lscpu | grep 'Model name' | sed 's/\\s\\+/ /g' | cut -d ' ' -f 3-")
 }
 
 -- [[ Generate the graph web of CPUs ]]
@@ -222,7 +223,7 @@ local init_table = {
 local raw_string = [[
 Uptime: ${uptime}
 
-#{cpu_name}
+#{cpu_ls}
 
 #{cpu_graphs}
 #{mem_graph}
